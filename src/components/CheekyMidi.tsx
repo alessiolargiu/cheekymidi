@@ -18,7 +18,7 @@ import SfxMode from './SfxMode';
 
 
 function CheekyMidi() {
-  //ver 0.66 - 01/4/2026
+  //ver 0.75 - 03/4/2026
 
 
 
@@ -169,7 +169,7 @@ function CheekyMidi() {
           />
 
           <Typography className="version" sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
-            V 0.66
+            V 0.75
           </Typography>
 
         </Box>
