@@ -5,7 +5,7 @@ import { WebMidi } from 'webmidi';
 import { loadSample, playSample, releaseSample } from '../scripts/midiManager';
 import Sounds from './Sounds';
 import { detectPitch } from '../scripts/soundManager';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Divider, Typography } from '@mui/material';
 import Recorder from './Recorder';
 import UserSounds from './UserSounds';
 import logo from '../assets/images/logo.png'
@@ -158,67 +158,141 @@ function CheekyMidi() {
 
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", gap: "40px", height: "100vh", width: "100vw" }}>
-      
-      <Box><Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
-          V 0.66
-        </Typography></Box>
-      <Box
-        component="img"
-        sx={{
-          height: "200px",
-          margin: "30px"
-        }}
-        src={logo}
-      />
+    <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", height: "100vh", width: "100vw" }}>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
-          Musica
-        </Typography>
-        <Button onClick={() => {
-
-          if (mode === "music") {
-            setMode("sfx")
-            setPendingSfxSample(null); // clear pending if you switch mid-flow
-            setKeyboardMode(false)
-          } else {
-            setMode("music")
-            setPendingSfxSample(null); // clear pending if you switch mid-flow
-            setKeyboardMode(false)
-          }
-        }} sx={{ display: "flex", flexDirection: "column", color: "black" }} >
-          <img
-            src={toggle}
-            style={{
-              height: "30px",
-              objectFit: 'contain',
-              padding: "10px",
-              transform: mode !== "music" ? "rotate(0deg)" : "rotate(180deg)"
-            }}
+      <Box className="header">
+        <Box className="info">
+          <Box
+            component="img"
+            className='logo'
+            src={logo}
           />
-        </Button>
 
-        {/*<Switch
-          checked={mode === 'sfx'}
-          onChange={(_, checked) => {
-            setMode(checked ? 'sfx' : 'music');
-            setPendingSfxSample(null); // clear pending if you switch mid-flow
-            setKeyboardMode(false)
-          }}
-          sx={{
-            '& .MuiSwitch-thumb': { background: mode === 'sfx' ? '#5de86a' : '#f0d080' },
-            '& .MuiSwitch-track': { background: mode === 'sfx' ? '#2a5030' : '#4a3520' },
-          }}
-        />*/}
+          <Typography className="version" sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
+            V 0.66
+          </Typography>
+
+        </Box>
+        <Box className="buttons">
 
 
 
-        <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
-          SFX
-        </Typography>
+
+
+
+          {mode !== "sfx" && <Box sx={{
+            display: "flex !important",
+            flexDirection: "row",
+            alignItems: "center"
+          }}>
+
+            <Button onClick={() => { setKeyboardMode((old) => { return !old }) }} sx={{ display: "flex", flexDirection: "column", color: "black" }} >
+              <img
+                src={toggle}
+                style={{
+                  height: "20px",
+                  objectFit: 'contain',
+                  padding: "10px",
+                  transform: keyboardMode ? "rotate(0deg)" : "rotate(180deg)",
+
+                }}
+              /></Button>
+            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "20px", fontWeight: 900, textTransform: 'none' }}> Mostra tastiera ({keyboardMode ? "ON" : "OFF"}) </Typography>
+          </Box>
+          }
+
+          <Divider orientation="vertical" variant="middle" flexItem />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
+              Musica
+            </Typography>
+            <Button onClick={() => {
+
+              if (mode === "music") {
+                setMode("sfx")
+                setPendingSfxSample(null); // clear pending if you switch mid-flow
+                setKeyboardMode(false)
+              } else {
+                setMode("music")
+                setPendingSfxSample(null); // clear pending if you switch mid-flow
+                setKeyboardMode(false)
+              }
+            }} sx={{ display: "flex", flexDirection: "column", color: "black" }} >
+              <img
+                src={toggle}
+                style={{
+                  height: "20px",
+                  objectFit: 'contain',
+                  padding: "10px",
+                  transform: mode !== "music" ? "rotate(0deg)" : "rotate(180deg)"
+                }}
+              />
+            </Button>
+
+            <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
+              SFX
+            </Typography>
+          </Box>
+
+        </Box>
+
       </Box>
-      {mode === 'sfx' && (
+
+
+
+      
+
+
+      <Box className="sections">
+        <Box className="sounds">
+
+          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> Suoni preregistrati </Typography>
+            <Sounds selectSound={selectSound} selected={selected} onSelect={setSelected}></Sounds>
+          </Box>
+
+
+          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", marginTop: "30px"}}>
+            {savedAudios.length > 0 && <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> I tuoi suoni </Typography>}
+            <UserSounds soundsList={savedAudios} selectAudioBuffer={selectAudioBuffer} selected={selected} onSelect={setSelected}></UserSounds>
+          </Box>
+
+        </Box>
+
+
+        <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }} className="user">
+          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", gap: "50px" }} >
+            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}>
+              Tasto per registrare i suoni
+            </Typography>
+            <Recorder ctx={ctx} silenceThreshold={silenceThreshold} selectAudioBuffer={selectAudioBuffer} />
+            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900, mt: 2 }}>
+              Oppure carica un file
+            </Typography>
+            <FileUploader ctx={ctx} selectAudioBuffer={selectAudioBuffer} />
+          </Box>
+
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: "30px" }}>
+            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> Soglia del silenzio: {silenceThreshold.toFixed(3)} </Typography>
+            <input
+              type="range"
+              min={0.001}
+              max={0.1}
+              step={0.001}
+              value={silenceThreshold}
+              onChange={e => setSilenceThreshold(parseFloat(e.target.value))}
+            />
+          </label>
+        </Box>
+                
+      </Box>
+
+   <Box className="extra">
+
+      
+
+                {mode === 'sfx' && (
         <SfxMode
           ctx={ctx}
           ref={sfxModeRef}
@@ -228,80 +302,17 @@ function CheekyMidi() {
         />
       )}
 
-
-
-      <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-        {mode !== "sfx" &&
-          <Button onClick={() => { setKeyboardMode((old) => { return !old }) }} sx={{ display: "flex", flexDirection: "column", color: "black" }} >
-            <img
-              src={toggle}
-              style={{
-                height: "30px",
-                objectFit: 'contain',
-                padding: "10px",
-                transform: keyboardMode ? "rotate(0deg)" : "rotate(180deg)"
-              }}
-            />
-            <Typography sx={{ fontFamily: "Indie Flower", fontSize: "20px", fontWeight: 900, textTransform: 'none' }}> Mostra tastiera ({keyboardMode ? "ON" : "OFF"}) </Typography>
-
-          </Button>}
-        {keyboardMode && mode !== "sfx" && <MidiKeyboard
-          onNoteOn={(note) => {
-            if (!currentSample.current) return;
-            playSample(ctx, currentSample.current, note, currentKey.current, activeNotes.current);
-          }}
-          onNoteOff={(note) => {
-            releaseSample(ctx, note, activeNotes.current);
-          }}
-        />}
-      </Box>
-
-
-      <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-        <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> Suoni preregistrati </Typography>
-        <Sounds selectSound={selectSound} selected={selected} onSelect={setSelected}></Sounds>
-      </Box>
-
-
-      <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-        {savedAudios.length > 0 && <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> I tuoi suoni </Typography>}
-        <UserSounds soundsList={savedAudios} selectAudioBuffer={selectAudioBuffer} selected={selected} onSelect={setSelected}></UserSounds>
-      </Box>
-
-
-
-      <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-        <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-          <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}>
-            Tasto per registrare i suoni
-          </Typography>
-          <Recorder ctx={ctx} silenceThreshold={silenceThreshold} selectAudioBuffer={selectAudioBuffer} />
-
-          {/* ↓ NEW */}
-          <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900, mt: 2 }}>
-            Oppure carica un file
-          </Typography>
-          <FileUploader ctx={ctx} selectAudioBuffer={selectAudioBuffer} />
-          {/* ↑ NEW */}
-
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            ...silence threshold slider...
-          </label>
-        </Box>
-
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> Silence threshold: {silenceThreshold.toFixed(3)} </Typography>
-          <input
-            type="range"
-            min={0.001}
-            max={0.1}
-            step={0.001}
-            value={silenceThreshold}
-            onChange={e => setSilenceThreshold(parseFloat(e.target.value))}
-          />
-        </label>
-      </Box>
-
+      {keyboardMode && mode !== "sfx" && <MidiKeyboard
+        onNoteOn={(note) => {
+          if (!currentSample.current) return;
+          playSample(ctx, currentSample.current, note, currentKey.current, activeNotes.current);
+        }}
+        onNoteOff={(note) => {
+          releaseSample(ctx, note, activeNotes.current);
+        }}
+      />}
+    </Box>
+        
     </Box>
   )
 }
