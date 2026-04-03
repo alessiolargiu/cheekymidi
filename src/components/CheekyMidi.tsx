@@ -5,14 +5,15 @@ import { WebMidi } from 'webmidi';
 import { loadSample, playSample, releaseSample } from '../scripts/midiManager';
 import Sounds from './Sounds';
 import { detectPitch } from '../scripts/soundManager';
-import { Box, Button, Switch, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import Recorder from './Recorder';
 import UserSounds from './UserSounds';
 import logo from '../assets/images/logo.png'
 import MidiKeyboard from './MidiKeyboard';
 import toggle from "../assets/images/toggle.png";
-import SfxMode, { type PendingSfxSample, type SfxModeHandle } from './Sfxmode';
 import FileUploader from './FileUploader';
+import type { PendingSfxSample, SfxModeHandle } from './SfxMode';
+import SfxMode from './SfxMode';
 
 
 

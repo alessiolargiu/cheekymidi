@@ -55,7 +55,7 @@ export default Sounds;*/
 
 import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
 import recorded from '../assets/images/recorded.png'
-import { buttonProperties, type AudioBufferProfile, type buttonToggle, type SoundProfile } from '../scripts/common';
+import { buttonProperties, type buttonToggle } from '../scripts/common';
 
 // ─────────────────────────────────────────────
 //  WAV encoder
