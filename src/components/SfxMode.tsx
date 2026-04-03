@@ -253,7 +253,6 @@ function MappingBadge({ mapping, isFlashing, onRemove }: {
         maxWidth: '60px', textAlign: 'center', lineHeight: 1.2,
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
-        {mapping.label}
       </Typography>
     </Box>
   );
