@@ -18,7 +18,7 @@ import SfxMode from './SfxMode';
 
 
 function CheekyMidi() {
-  //ver 0.60 - 01/4/2026
+  //ver 0.66 - 01/4/2026
 
 
 
@@ -159,6 +159,10 @@ function CheekyMidi() {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", gap: "40px", height: "100vh", width: "100vw" }}>
+      
+      <Box><Typography sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
+          V 0.66
+        </Typography></Box>
       <Box
         component="img"
         sx={{

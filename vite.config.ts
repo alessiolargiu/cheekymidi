@@ -9,5 +9,5 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     
   ],
-  base: '/cheekyMidi/'
+  base: '/cheekymidi/'
 })
