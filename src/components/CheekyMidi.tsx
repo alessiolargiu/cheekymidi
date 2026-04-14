@@ -144,7 +144,11 @@ function CheekyMidi() {
           });
 
           input.addListener("noteoff", e => {
-            releaseSample(ctx, e.note.number, activeNotes.current);
+            if (modeRef.current === 'sfx') {
+              sfxModeRef.current?.handleMidiNoteOff(e.note.number);  // ← sfx stop
+            } else {
+              releaseSample(ctx, e.note.number, activeNotes.current); // ← music mode unchanged
+            } 
           });
         }
 
@@ -152,7 +156,6 @@ function CheekyMidi() {
       .catch(err => console.error(err));
 
   }, []);
-
 
 
 
@@ -169,7 +172,7 @@ function CheekyMidi() {
           />
 
           <Typography className="version" sx={{ fontFamily: 'Indie Flower', fontSize: '20px' }}>
-            V 0.75
+            V 0.85
           </Typography>
 
         </Box>
@@ -241,8 +244,6 @@ function CheekyMidi() {
 
 
 
-      
-
 
       <Box className="sections">
         <Box className="sounds">
@@ -253,7 +254,7 @@ function CheekyMidi() {
           </Box>
 
 
-          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", marginTop: "30px"}}>
+          <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", marginTop: "30px" }}>
             {savedAudios.length > 0 && <Typography sx={{ fontFamily: "Indie Flower", fontSize: "30px", fontWeight: 900 }}> I tuoi suoni </Typography>}
             <UserSounds soundsList={savedAudios} selectAudioBuffer={selectAudioBuffer} selected={selected} onSelect={setSelected}></UserSounds>
           </Box>
@@ -285,34 +286,34 @@ function CheekyMidi() {
             />
           </label>
         </Box>
-                
+
       </Box>
 
-   <Box className="extra">
+      <Box className="extra">
 
-      
 
-                {mode === 'sfx' && (
-        <SfxMode
-          ctx={ctx}
-          ref={sfxModeRef}
-          pendingSample={pendingSfxSample}
-          onMappingDone={() => setPendingSfxSample(null)}
 
-        />
-      )}
+        {mode === 'sfx' && (
+          <SfxMode
+            ctx={ctx}
+            ref={sfxModeRef}
+            pendingSample={pendingSfxSample}
+            onMappingDone={() => setPendingSfxSample(null)}
 
-      {keyboardMode && mode !== "sfx" && <MidiKeyboard
-        onNoteOn={(note) => {
-          if (!currentSample.current) return;
-          playSample(ctx, currentSample.current, note, currentKey.current, activeNotes.current);
-        }}
-        onNoteOff={(note) => {
-          releaseSample(ctx, note, activeNotes.current);
-        }}
-      />}
-    </Box>
-        
+          />
+        )}
+
+        {keyboardMode && mode !== "sfx" && <MidiKeyboard
+          onNoteOn={(note) => {
+            if (!currentSample.current) return;
+            playSample(ctx, currentSample.current, note, currentKey.current, activeNotes.current);
+          }}
+          onNoteOff={(note) => {
+            releaseSample(ctx, note, activeNotes.current);
+          }}
+        />}
+      </Box>
+
     </Box>
   )
 }

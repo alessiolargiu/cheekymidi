@@ -11,6 +11,7 @@ export interface PendingSfxSample {
 
 export interface SfxModeHandle {
   handleMidiNote: (note: number) => void;
+  handleMidiNoteOff: (note: number) => void;  // ← add this
 }
 
 interface SfxMapping {
@@ -27,6 +28,8 @@ interface SfxModeProps {
   onMappingDone: () => void;
 }
 
+
+
 // ─────────────────────────────────────────────
 //  Helpers
 // ─────────────────────────────────────────────
@@ -37,7 +40,7 @@ function midiNoteName(note: number): string {
   return NOTE_NAMES[note % 12] + octave;
 }
 
-function playSfx(ctx: AudioContext, buffer: AudioBuffer) {
+function playSfx(ctx: AudioContext, buffer: AudioBuffer): AudioBufferSourceNode {
   const gain = ctx.createGain();
   gain.gain.value = 1;
   gain.connect(ctx.destination);
@@ -45,6 +48,7 @@ function playSfx(ctx: AudioContext, buffer: AudioBuffer) {
   src.buffer = buffer;
   src.connect(gain);
   src.start();
+  return src; // ← return it
 }
 
 const BADGE_COLORS = [
@@ -61,18 +65,20 @@ function colorFor(index: number) {
 const SfxMode = forwardRef<SfxModeHandle, SfxModeProps>(
   ({ ctx, pendingSample, onMappingDone }, ref) => {
 
-    const [mappings, setMappings]   = useState<SfxMapping[]>([]);
-    const [status, setStatus]       = useState<'idle' | 'awaiting'>('idle');
+    const [mappings, setMappings] = useState<SfxMapping[]>([]);
+    const [status, setStatus] = useState<'idle' | 'awaiting'>('idle');
     const [flashNote, setFlashNote] = useState<number | null>(null);
 
-    const mappingsRef   = useRef<SfxMapping[]>([]);
-    const statusRef     = useRef<'idle' | 'awaiting'>('idle');
-    const pendingRef    = useRef<PendingSfxSample | null>(null);
+    const mappingsRef = useRef<SfxMapping[]>([]);
+    const statusRef = useRef<'idle' | 'awaiting'>('idle');
+    const pendingRef = useRef<PendingSfxSample | null>(null);
     const colorIndexRef = useRef(0);
+    const activeSourcesRef = useRef<Map<number, AudioBufferSourceNode>>(new Map());
+
 
     mappingsRef.current = mappings;
-    statusRef.current   = status;
-    pendingRef.current  = pendingSample;
+    statusRef.current = status;
+    pendingRef.current = pendingSample;
 
     // Enter awaiting state when parent loads a new sample
     useEffect(() => {
@@ -90,7 +96,7 @@ const SfxMode = forwardRef<SfxModeHandle, SfxModeProps>(
         if (statusRef.current === 'awaiting' && pendingRef.current) {
           // Map this MIDI note → pending sound
           const pending = pendingRef.current;
-          const color   = colorFor(colorIndexRef.current++);
+          const color = colorFor(colorIndexRef.current++);
 
           setMappings(prev => {
             const filtered = prev.filter(m => m.note !== note); // overwrite if already mapped
@@ -108,12 +114,33 @@ const SfxMode = forwardRef<SfxModeHandle, SfxModeProps>(
           flash(note, 600);
 
         } else if (statusRef.current === 'idle') {
-          // Trigger SFX if this note has a mapping
           const mapping = mappingsRef.current.find(m => m.note === note);
           if (mapping) {
-            playSfx(ctx, mapping.buffer);
+            // Stop the previous instance of this note if still playing
+            const existing = activeSourcesRef.current.get(note);
+            if (existing) {
+              try { existing.stop(); } catch (_) { /* already ended */ }
+            }
+
+            const src = playSfx(ctx, mapping.buffer);
+            activeSourcesRef.current.set(note, src);
+
+            // Clean up the ref when the sound finishes naturally
+            src.onended = () => {
+              if (activeSourcesRef.current.get(note) === src) {
+                activeSourcesRef.current.delete(note);
+              }
+            };
+
             flash(note, 200);
           }
+        }
+      },
+      handleMidiNoteOff(note: number) {
+        const src = activeSourcesRef.current.get(note);
+        if (src) {
+          try { src.stop(); } catch (_) { }
+          activeSourcesRef.current.delete(note);
         }
       },
     }), [ctx, onMappingDone, flash]);
@@ -150,8 +177,8 @@ const SfxMode = forwardRef<SfxModeHandle, SfxModeProps>(
           ? <AwaitingPrompt label={pendingSample?.label ?? 'suono'} />
           : mappings.length === 0
             ? <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '16px', color: '#3a6040', textAlign: 'center', maxWidth: '280px', zIndex: 1 }}>
-                Seleziona un suono, poi premi un tasto MIDI per mapparlo ↑
-              </Typography>
+              Seleziona un suono, poi premi un tasto MIDI per mapparlo ↑
+            </Typography>
             : null
         }
 
@@ -196,7 +223,7 @@ function AwaitingPrompt({ label }: { label: string }) {
       animation: 'sfxPulse 1.2s ease-in-out infinite',
       '@keyframes sfxPulse': {
         '0%, 100%': { borderColor: '#3a8040', boxShadow: '0 0 0 0 rgba(80,220,80,0)' },
-        '50%':      { borderColor: '#5de86a', boxShadow: '0 0 16px 4px rgba(80,220,80,0.2)' },
+        '50%': { borderColor: '#5de86a', boxShadow: '0 0 16px 4px rgba(80,220,80,0.2)' },
       },
     }}>
       <Typography sx={{ fontFamily: 'Indie Flower', fontSize: '14px', color: '#5de86a', textAlign: 'center' }}>
